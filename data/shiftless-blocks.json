@@ -1,0 +1,150 @@
+{
+  "source": {
+    "repo": "/home/kayla/Programming/C#/Shiftless.VoxelEngine",
+    "ref": "main",
+    "extractedAt": "2026-05-25T20:49:26.858Z"
+  },
+  "meshFormat": "cube-faces-v1",
+  "blocks": [
+    {
+      "id": "stone",
+      "name": "Stone",
+      "sourceClass": "StoneBlock",
+      "model": "cube",
+      "faces": {
+        "up": "img/shiftless/blocks/rocks-test2.png",
+        "down": "img/shiftless/blocks/rocks-test2.png",
+        "north": "img/shiftless/blocks/rocks-test2.png",
+        "south": "img/shiftless/blocks/rocks-test2.png",
+        "east": "img/shiftless/blocks/rocks-test2.png",
+        "west": "img/shiftless/blocks/rocks-test2.png"
+      }
+    },
+    {
+      "id": "dirt",
+      "name": "Dirt",
+      "sourceClass": "DirtBlock",
+      "model": "cube",
+      "faces": {
+        "up": "img/shiftless/blocks/dirt.png",
+        "down": "img/shiftless/blocks/dirt.png",
+        "north": "img/shiftless/blocks/dirt.png",
+        "south": "img/shiftless/blocks/dirt.png",
+        "east": "img/shiftless/blocks/dirt.png",
+        "west": "img/shiftless/blocks/dirt.png"
+      }
+    },
+    {
+      "id": "grass",
+      "name": "Grass",
+      "sourceClass": "GrassBlock",
+      "model": "grass",
+      "faces": {
+        "up": "img/shiftless/blocks/grass_top.png",
+        "down": "img/shiftless/blocks/dirt.png",
+        "north": "img/shiftless/blocks/grass_side.png",
+        "south": "img/shiftless/blocks/grass_side.png",
+        "east": "img/shiftless/blocks/grass_side.png",
+        "west": "img/shiftless/blocks/grass_side.png"
+      }
+    },
+    {
+      "id": "stem",
+      "name": "Stem",
+      "sourceClass": "StemBlock",
+      "model": "pillar",
+      "faces": {
+        "up": "img/shiftless/blocks/stem_top.png",
+        "down": "img/shiftless/blocks/stem_top.png",
+        "north": "img/shiftless/blocks/stem_side.png",
+        "south": "img/shiftless/blocks/stem_side.png",
+        "east": "img/shiftless/blocks/stem_side.png",
+        "west": "img/shiftless/blocks/stem_side.png"
+      }
+    },
+    {
+      "id": "bulb",
+      "name": "Bulb",
+      "sourceClass": "BulbBlock",
+      "model": "cube",
+      "faces": {
+        "up": "img/shiftless/blocks/bulb.png",
+        "down": "img/shiftless/blocks/bulb.png",
+        "north": "img/shiftless/blocks/bulb.png",
+        "south": "img/shiftless/blocks/bulb.png",
+        "east": "img/shiftless/blocks/bulb.png",
+        "west": "img/shiftless/blocks/bulb.png"
+      }
+    },
+    {
+      "id": "frozen_rock",
+      "name": "Frozen Rock",
+      "sourceClass": "FrozenRockBlock",
+      "model": "cube",
+      "faces": {
+        "up": "img/shiftless/blocks/frozen_rock.png",
+        "down": "img/shiftless/blocks/frozen_rock.png",
+        "north": "img/shiftless/blocks/frozen_rock.png",
+        "south": "img/shiftless/blocks/frozen_rock.png",
+        "east": "img/shiftless/blocks/frozen_rock.png",
+        "west": "img/shiftless/blocks/frozen_rock.png"
+      }
+    },
+    {
+      "id": "snow",
+      "name": "Snow",
+      "sourceClass": "SnowBlock",
+      "model": "cube",
+      "faces": {
+        "up": "img/shiftless/blocks/snow.png",
+        "down": "img/shiftless/blocks/snow.png",
+        "north": "img/shiftless/blocks/snow.png",
+        "south": "img/shiftless/blocks/snow.png",
+        "east": "img/shiftless/blocks/snow.png",
+        "west": "img/shiftless/blocks/snow.png"
+      }
+    },
+    {
+      "id": "ice",
+      "name": "Ice",
+      "sourceClass": "IceBlock",
+      "model": "cube",
+      "faces": {
+        "up": "img/shiftless/blocks/ice.png",
+        "down": "img/shiftless/blocks/ice.png",
+        "north": "img/shiftless/blocks/ice.png",
+        "south": "img/shiftless/blocks/ice.png",
+        "east": "img/shiftless/blocks/ice.png",
+        "west": "img/shiftless/blocks/ice.png"
+      }
+    },
+    {
+      "id": "pine_log",
+      "name": "Pine Log",
+      "sourceClass": "PineLogBlock",
+      "model": "pillar",
+      "faces": {
+        "up": "img/shiftless/blocks/pine_log_top.png",
+        "down": "img/shiftless/blocks/pine_log_top.png",
+        "north": "img/shiftless/blocks/pine_log_side.png",
+        "south": "img/shiftless/blocks/pine_log_side.png",
+        "east": "img/shiftless/blocks/pine_log_side.png",
+        "west": "img/shiftless/blocks/pine_log_side.png"
+      }
+    },
+    {
+      "id": "pine_planks",
+      "name": "Pine Planks",
+      "sourceClass": "PinePlanksBlock",
+      "model": "cube",
+      "faces": {
+        "up": "img/shiftless/blocks/pine_planks.png",
+        "down": "img/shiftless/blocks/pine_planks.png",
+        "north": "img/shiftless/blocks/pine_planks.png",
+        "south": "img/shiftless/blocks/pine_planks.png",
+        "east": "img/shiftless/blocks/pine_planks.png",
+        "west": "img/shiftless/blocks/pine_planks.png"
+      }
+    }
+  ]
+}

@@ -1,0 +1,365 @@
+(() => {
+  const faceOrder = ["up", "down", "north", "south", "east", "west"];
+  const faceGeometry = {
+    up: { normal: [0, 1, 0], positions: [[-1, 1, -1], [1, 1, -1], [1, 1, 1], [-1, 1, 1]] },
+    down: { normal: [0, -1, 0], positions: [[-1, -1, 1], [1, -1, 1], [1, -1, -1], [-1, -1, -1]] },
+    north: { normal: [0, 0, -1], positions: [[1, -1, -1], [1, 1, -1], [-1, 1, -1], [-1, -1, -1]] },
+    south: { normal: [0, 0, 1], positions: [[-1, -1, 1], [-1, 1, 1], [1, 1, 1], [1, -1, 1]] },
+    east: { normal: [1, 0, 0], positions: [[1, -1, 1], [1, 1, 1], [1, 1, -1], [1, -1, -1]] },
+    west: { normal: [-1, 0, 0], positions: [[-1, -1, -1], [-1, 1, -1], [-1, 1, 1], [-1, -1, 1]] }
+  };
+  const uvs = [[0, 1], [0, 0], [1, 0], [1, 1]];
+  const indices = [0, 1, 2, 0, 2, 3];
+
+  const vertexShaderSource = `
+    attribute vec3 aPosition;
+    attribute vec2 aUv;
+    attribute vec3 aNormal;
+    uniform mat4 uMatrix;
+    varying vec2 vUv;
+    varying float vLight;
+
+    void main() {
+      vec3 lightDirection = normalize(vec3(0.35, 0.82, 0.58));
+      vLight = 0.58 + max(dot(normalize(aNormal), lightDirection), 0.0) * 0.42;
+      vUv = aUv;
+      gl_Position = uMatrix * vec4(aPosition, 1.0);
+    }
+  `;
+
+  const fragmentShaderSource = `
+    precision mediump float;
+    uniform sampler2D uTexture;
+    varying vec2 vUv;
+    varying float vLight;
+
+    void main() {
+      vec4 color = texture2D(uTexture, vUv);
+      if (color.a < 0.05) discard;
+      gl_FragColor = vec4(color.rgb * vLight, color.a);
+    }
+  `;
+
+  function createShader(gl, type, source) {
+    const shader = gl.createShader(type);
+    gl.shaderSource(shader, source);
+    gl.compileShader(shader);
+    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+      throw new Error(gl.getShaderInfoLog(shader) || "Shader compile failed");
+    }
+    return shader;
+  }
+
+  function createProgram(gl) {
+    const program = gl.createProgram();
+    gl.attachShader(program, createShader(gl, gl.VERTEX_SHADER, vertexShaderSource));
+    gl.attachShader(program, createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource));
+    gl.linkProgram(program);
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+      throw new Error(gl.getProgramInfoLog(program) || "Program link failed");
+    }
+    return program;
+  }
+
+  function multiply(a, b) {
+    const out = new Array(16);
+    for (let row = 0; row < 4; row++) {
+      for (let col = 0; col < 4; col++) {
+        out[col * 4 + row] =
+          a[row] * b[col * 4] +
+          a[4 + row] * b[col * 4 + 1] +
+          a[8 + row] * b[col * 4 + 2] +
+          a[12 + row] * b[col * 4 + 3];
+      }
+    }
+    return out;
+  }
+
+  function perspective(fov, aspect, near, far) {
+    const f = 1 / Math.tan(fov / 2);
+    const nf = 1 / (near - far);
+    return [f / aspect, 0, 0, 0, 0, f, 0, 0, 0, 0, (far + near) * nf, -1, 0, 0, 2 * far * near * nf, 0];
+  }
+
+  function orthographic(left, right, bottom, top, near, far) {
+    return [
+      2 / (right - left), 0, 0, 0,
+      0, 2 / (top - bottom), 0, 0,
+      0, 0, -2 / (far - near), 0,
+      -(right + left) / (right - left), -(top + bottom) / (top - bottom), -(far + near) / (far - near), 1
+    ];
+  }
+
+  function translate(matrix, x, y, z) {
+    return multiply(matrix, [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, x, y, z, 1]);
+  }
+
+  function scale(matrix, x, y, z) {
+    return multiply(matrix, [x, 0, 0, 0, 0, y, 0, 0, 0, 0, z, 0, 0, 0, 0, 1]);
+  }
+
+  function rotateX(matrix, angle) {
+    const c = Math.cos(angle);
+    const s = Math.sin(angle);
+    return multiply(matrix, [1, 0, 0, 0, 0, c, s, 0, 0, -s, c, 0, 0, 0, 0, 1]);
+  }
+
+  function rotateY(matrix, angle) {
+    const c = Math.cos(angle);
+    const s = Math.sin(angle);
+    return multiply(matrix, [c, 0, -s, 0, 0, 1, 0, 0, s, 0, c, 0, 0, 0, 0, 1]);
+  }
+
+  function resizeCanvas(canvas) {
+    const rect = canvas.getBoundingClientRect();
+    const ratio = Math.min(window.devicePixelRatio || 1, 2);
+    const width = Math.max(1, Math.floor(rect.width * ratio));
+    const height = Math.max(1, Math.floor(rect.height * ratio));
+    if (canvas.width !== width || canvas.height !== height) {
+      canvas.width = width;
+      canvas.height = height;
+    }
+  }
+
+  function loadImage(url) {
+    return new Promise((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => resolve(image);
+      image.onerror = () => reject(new Error(`Failed to load ${url}`));
+      image.src = url;
+    });
+  }
+
+  function createTexture(gl, image) {
+    const texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+    return texture;
+  }
+
+  function createFaceBuffer(gl, face) {
+    const geometry = faceGeometry[face];
+    const data = [];
+    for (const index of indices) {
+      data.push(...geometry.positions[index], ...uvs[index], ...geometry.normal);
+    }
+    const buffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW);
+    return buffer;
+  }
+
+  async function initViewer(root) {
+    const canvas = root.querySelector("[data-block-canvas]");
+    const menu = root.querySelector("[data-block-menu]");
+    const menuButton = root.querySelector("[data-block-menu-button]");
+    const galleryButton = root.querySelector("[data-gallery-button]");
+    const autoRotate = root.querySelector("[data-auto-rotate]");
+    const blockName = root.querySelector("[data-block-name]");
+    const assetPrefix = root.dataset.assetPrefix || "";
+    const data = await fetch(root.dataset.source).then((response) => response.json());
+    const gl = canvas.getContext("webgl", { alpha: true, antialias: false });
+
+    if (!gl) {
+      root.classList.add("is-unavailable");
+      return;
+    }
+
+    const program = createProgram(gl);
+    const locations = {
+      position: gl.getAttribLocation(program, "aPosition"),
+      uv: gl.getAttribLocation(program, "aUv"),
+      normal: gl.getAttribLocation(program, "aNormal"),
+      matrix: gl.getUniformLocation(program, "uMatrix"),
+      texture: gl.getUniformLocation(program, "uTexture")
+    };
+    const faceBuffers = Object.fromEntries(faceOrder.map((face) => [face, createFaceBuffer(gl, face)]));
+    const texturePaths = [...new Set(data.blocks.flatMap((block) => Object.values(block.faces)))];
+    const textures = new Map();
+
+    await Promise.all(texturePaths.map(async (path) => {
+      textures.set(path, createTexture(gl, await loadImage(`${assetPrefix}${path}`)));
+    }));
+
+    let mode = "gallery";
+    let selectedBlock = data.blocks[0];
+    let yaw = -0.72;
+    let pitch = -0.48;
+    let dragging = false;
+    let lastX = 0;
+    let lastY = 0;
+    let lastTime = performance.now();
+    let hitBoxes = [];
+
+    function selectBlock(block) {
+      selectedBlock = block;
+      mode = "detail";
+      menu.hidden = true;
+      root.classList.add("is-detail");
+      blockName.textContent = block.name;
+    }
+
+    function showGallery() {
+      mode = "gallery";
+      root.classList.remove("is-detail");
+      blockName.textContent = "Block gallery";
+    }
+
+    function populateMenu() {
+      menu.textContent = "";
+      const all = document.createElement("button");
+      all.type = "button";
+      all.textContent = "All blocks";
+      all.addEventListener("click", () => {
+        showGallery();
+        menu.hidden = true;
+      });
+      menu.append(all);
+
+      for (const block of data.blocks) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = block.name;
+        button.addEventListener("click", () => selectBlock(block));
+        menu.append(button);
+      }
+    }
+
+    function bindAttributes() {
+      gl.enableVertexAttribArray(locations.position);
+      gl.enableVertexAttribArray(locations.uv);
+      gl.enableVertexAttribArray(locations.normal);
+      gl.vertexAttribPointer(locations.position, 3, gl.FLOAT, false, 32, 0);
+      gl.vertexAttribPointer(locations.uv, 2, gl.FLOAT, false, 32, 12);
+      gl.vertexAttribPointer(locations.normal, 3, gl.FLOAT, false, 32, 20);
+    }
+
+    function drawBlock(block, matrix) {
+      gl.uniformMatrix4fv(locations.matrix, false, new Float32Array(matrix));
+      for (const face of faceOrder) {
+        gl.bindBuffer(gl.ARRAY_BUFFER, faceBuffers[face]);
+        bindAttributes();
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, textures.get(block.faces[face]));
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+      }
+    }
+
+    function drawGallery(now) {
+      const rect = canvas.getBoundingClientRect();
+      const columns = Math.max(2, Math.min(5, Math.floor(rect.width / 132)));
+      const rows = Math.ceil(data.blocks.length / columns);
+      const cell = 3.2;
+      const width = columns * cell;
+      const height = rows * cell;
+      let base = orthographic(-width / 2, width / 2, -height / 2, height / 2, -20, 20);
+      base = rotateX(base, -0.58);
+      base = rotateY(base, autoRotate.checked ? now * 0.00018 : 0.72);
+      hitBoxes = [];
+
+      data.blocks.forEach((block, index) => {
+        const col = index % columns;
+        const row = Math.floor(index / columns);
+        const x = (col - (columns - 1) / 2) * cell;
+        const y = ((rows - 1) / 2 - row) * cell;
+        let matrix = translate(base, x, y, 0);
+        matrix = scale(matrix, 0.72, 0.72, 0.72);
+        drawBlock(block, matrix);
+        hitBoxes.push({
+          block,
+          left: (col / columns) * rect.width,
+          top: (row / rows) * rect.height,
+          right: ((col + 1) / columns) * rect.width,
+          bottom: ((row + 1) / rows) * rect.height
+        });
+      });
+    }
+
+    function drawDetail(delta) {
+      if (autoRotate.checked && !dragging) {
+        yaw += delta * 0.65;
+      }
+      const aspect = canvas.width / canvas.height;
+      let matrix = perspective(Math.PI / 4, aspect, 0.1, 100);
+      matrix = translate(matrix, 0, 0, -6);
+      matrix = rotateX(matrix, pitch);
+      matrix = rotateY(matrix, yaw);
+      drawBlock(selectedBlock, matrix);
+    }
+
+    populateMenu();
+    showGallery();
+    menuButton.addEventListener("click", () => {
+      menu.hidden = !menu.hidden;
+    });
+    galleryButton.addEventListener("click", showGallery);
+
+    canvas.addEventListener("pointerdown", (event) => {
+      const rect = canvas.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+
+      if (mode === "gallery") {
+        const hit = hitBoxes.find((box) => x >= box.left && x <= box.right && y >= box.top && y <= box.bottom);
+        if (hit) {
+          selectBlock(hit.block);
+        }
+        return;
+      }
+
+      dragging = true;
+      lastX = event.clientX;
+      lastY = event.clientY;
+      canvas.setPointerCapture(event.pointerId);
+    });
+
+    canvas.addEventListener("pointermove", (event) => {
+      if (!dragging || mode !== "detail") {
+        return;
+      }
+      yaw += (event.clientX - lastX) * 0.012;
+      pitch += (event.clientY - lastY) * 0.012;
+      pitch = Math.max(-1.25, Math.min(1.25, pitch));
+      lastX = event.clientX;
+      lastY = event.clientY;
+    });
+
+    canvas.addEventListener("pointerup", () => {
+      dragging = false;
+    });
+
+    function draw(now) {
+      resizeCanvas(canvas);
+      const delta = Math.min((now - lastTime) / 1000, 0.05);
+      lastTime = now;
+      gl.viewport(0, 0, canvas.width, canvas.height);
+      gl.clearColor(0, 0, 0, 0);
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+      gl.enable(gl.DEPTH_TEST);
+      gl.disable(gl.CULL_FACE);
+      gl.useProgram(program);
+      gl.uniform1i(locations.texture, 0);
+
+      if (mode === "gallery") {
+        drawGallery(now);
+      } else {
+        drawDetail(delta);
+      }
+
+      requestAnimationFrame(draw);
+    }
+
+    requestAnimationFrame(draw);
+  }
+
+  for (const root of document.querySelectorAll("[data-shiftless-block-viewer]")) {
+    initViewer(root).catch((error) => {
+      console.error(error);
+      root.classList.add("is-unavailable");
+    });
+  }
+})();

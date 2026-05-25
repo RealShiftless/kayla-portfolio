@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- License: MIT. Made by Ionicons: https://github.com/ionic-team/ionicons -->
+
+<svg
+   width="512"
+   height="512"
+   viewBox="0 0 512 512"
+   version="1.1"
+   id="svg1"
+   sodipodi:docname="svgviewer-output.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1">
+    <inkscape:page
+       x="0"
+       y="0"
+       width="512"
+       height="512"
+       id="page2"
+       margin="0"
+       bleed="0" />
+  </sodipodi:namedview>
+  <title
+     id="title1">ionicons-v5_logos</title>
+  <path
+     d="m 508.64,148.79 c 0,-45 -33.1,-81.2 -74,-81.2 C 379.24,65 322.74,64 265,64 H 247 C 189.4,64 132.8,65 77.4,67.6 36.6,67.6 3.5,104 3.5,149 1,184.59 -0.06,220.19 0,255.79 q -0.15,53.4 3.4,106.9 c 0,45 33.1,81.5 73.9,81.5 58.2,2.7 117.9,3.9 178.6,3.8 q 91.2,0.3 178.6,-3.8 c 40.9,0 74,-36.5 74,-81.5 2.4,-35.7 3.5,-71.3 3.4,-107 q 0.34,-53.4 -3.26,-106.9 z M 207,353.89 v -196.5 l 145,98.2 z"
+     id="path1"
+     style="fill:#ffffff" />
+</svg>
