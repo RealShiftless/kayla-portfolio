@@ -1,0 +1,129 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ProjectCard from "../components/ProjectCard.astro";
+
+const projects = (await getCollection("projects")).sort(
+  (a, b) => a.data.order - b.data.order
+).filter((project) => project.data.featured && !project.data.parent);
+---
+
+<BaseLayout title="Kayla Portfolio" description="Portfolio for Kayla Moulding">
+  <main id="top">
+    <section class="section section-blue">
+      <div class="wrap hero">
+        <div>
+          <p class="eyebrow">Software and IT portfolio</p>
+          <h1>Kayla Moulding</h1>
+          <p class="lead">
+            I work on C#/.NET and low-level technical projects with an interest
+            in runtime architecture, graphics abstraction, retained UI systems,
+            tooling, debugging, and IT troubleshooting.
+          </p>
+          <div class="hero-actions">
+            <a class="button" href="#projects">View projects</a>
+            <a class="button button-secondary" href="#about">View proficiencies</a>
+          </div>
+        </div>
+        <div class="portrait-wrap" aria-label="Profile image">
+          <img class="portrait" src="img/profile.jpg" alt="Portrait of Kayla" data-profile-image>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-mint" id="projects">
+      <div class="wrap">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Project index</p>
+            <h2>Projects</h2>
+          </div>
+          <p>A quick overview of selected projects.</p>
+        </div>
+        <div class="project-grid">
+          {projects.map((project) => <ProjectCard project={project} />)}
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-lilac" id="about">
+      <div class="wrap split">
+        <div>
+          <p class="eyebrow">About</p>
+          <h2>Proficiencies</h2>
+          <p class="body-copy">
+            I can work with HTML/CSS when a project needs it, but my stronger
+            direction is C#/.NET, C, modular architecture, runtime composition,
+            graphics abstraction, retained UI systems, and practical debugging.
+            I have more interest in UI frameworks like QML, Qt, Avalonia, and
+            WPF than in raw website work.
+          </p>
+          <p class="body-copy">
+            I also have a support-minded side: structured problem analysis,
+            Windows and Linux troubleshooting, Microsoft 365 basics, device and
+            driver issues, logs, package management, basic networking, and clear
+            technical communication. I like understanding the whole path from a
+            user-facing problem down to the code or system behavior behind it.
+          </p>
+        </div>
+        <div class="skills">
+          <article class="skill-block">
+            <h3>Languages and tooling</h3>
+            <p>C#/.NET, C, MySQL basics, xUnit, Git, GitHub, CLI workflows.</p>
+          </article>
+          <article class="skill-block">
+            <h3>Architecture</h3>
+            <p>Runtime systems, service composition, native interop, serialization.</p>
+          </article>
+          <article class="skill-block">
+            <h3>Graphics and UI</h3>
+            <p>OpenGL, Vulkan concepts, retained UI, XML view loading, layout systems.</p>
+          </article>
+          <article class="skill-block">
+            <h3>Troubleshooting</h3>
+            <p>Windows, Arch Linux, audio interfaces, drivers, plugins, latency.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-rose" id="experience">
+      <div class="wrap">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Experience</p>
+            <h2>Background</h2>
+          </div>
+          <p>
+            A practical mix of independent software work, IT troubleshooting,
+            testing, debugging, documentation, and technical support skills.
+          </p>
+        </div>
+        <div class="timeline">
+          <article class="timeline-item">
+            <span class="date">2026</span>
+            <div>
+                <h3>Clockwork engine/runtime project</h3>
+                <p>
+                  Building a modular C# project with runtime services,
+                  graphics abstractions, retained UI, text rendering,
+                  serialization notes, and native/backend boundaries.
+                </p>
+            </div>
+          </article>
+          <article class="timeline-item">
+            <span class="date">2025</span>
+            <div>
+                <h3>Technical troubleshooting and support practice</h3>
+                <p>
+                  Comfortable with structured problem analysis across Windows,
+                  Linux, devices, drivers, audio software, logs, CLI tools, and
+                  customer-facing technical communication.
+                </p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+</BaseLayout>

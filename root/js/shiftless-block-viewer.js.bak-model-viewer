@@ -1,0 +1,460 @@
+(() => {
+  const faceOrder = ["up", "down", "north", "south", "east", "west"];
+
+  const faceGeometry = {
+    up: { normal: [0, 1, 0], positions: [[-1, 1, -1], [1, 1, -1], [1, 1, 1], [-1, 1, 1]] },
+    down: { normal: [0, -1, 0], positions: [[-1, -1, 1], [1, -1, 1], [1, -1, -1], [-1, -1, -1]] },
+    north: { normal: [0, 0, -1], positions: [[1, -1, -1], [1, 1, -1], [-1, 1, -1], [-1, -1, -1]] },
+    south: { normal: [0, 0, 1], positions: [[-1, -1, 1], [-1, 1, 1], [1, 1, 1], [1, -1, 1]] },
+    east: { normal: [1, 0, 0], positions: [[1, -1, 1], [1, 1, 1], [1, 1, -1], [1, -1, -1]] },
+    west: { normal: [-1, 0, 0], positions: [[-1, -1, -1], [-1, 1, -1], [-1, 1, 1], [-1, -1, 1]] }
+  };
+
+  const uvs = [[0, 1], [0, 0], [1, 0], [1, 1]];
+  const indices = [0, 1, 2, 0, 2, 3];
+
+  const vertexShaderSource = `
+    attribute vec3 aPosition;
+    attribute vec2 aUv;
+    attribute vec3 aNormal;
+
+    uniform mat4 uMatrix;
+
+    varying vec2 vUv;
+    varying float vLight;
+
+    void main() {
+      vec3 lightDirection = normalize(vec3(0.35, 0.82, 0.58));
+      float direct = max(dot(normalize(aNormal), lightDirection), 0.0);
+      vLight = 0.56 + direct * 0.44;
+      vUv = aUv;
+      gl_Position = uMatrix * vec4(aPosition, 1.0);
+    }
+  `;
+
+  const fragmentShaderSource = `
+    precision mediump float;
+
+    uniform sampler2D uTexture;
+
+    varying vec2 vUv;
+    varying float vLight;
+
+    void main() {
+      vec4 color = texture2D(uTexture, vUv);
+      if (color.a < 0.05) discard;
+      gl_FragColor = vec4(color.rgb * vLight, color.a);
+    }
+  `;
+
+  function createShader(gl, type, source) {
+    const shader = gl.createShader(type);
+    gl.shaderSource(shader, source);
+    gl.compileShader(shader);
+
+    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+      throw new Error(gl.getShaderInfoLog(shader) || "Shader compile failed");
+    }
+
+    return shader;
+  }
+
+  function createProgram(gl) {
+    const program = gl.createProgram();
+    gl.attachShader(program, createShader(gl, gl.VERTEX_SHADER, vertexShaderSource));
+    gl.attachShader(program, createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource));
+    gl.linkProgram(program);
+
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+      throw new Error(gl.getProgramInfoLog(program) || "Program link failed");
+    }
+
+    return program;
+  }
+
+  function multiply(a, b) {
+    const out = new Array(16);
+
+    for (let row = 0; row < 4; row++) {
+      for (let col = 0; col < 4; col++) {
+        out[col * 4 + row] =
+          a[0 * 4 + row] * b[col * 4 + 0] +
+          a[1 * 4 + row] * b[col * 4 + 1] +
+          a[2 * 4 + row] * b[col * 4 + 2] +
+          a[3 * 4 + row] * b[col * 4 + 3];
+      }
+    }
+
+    return out;
+  }
+
+  function perspective(fov, aspect, near, far) {
+    const f = 1 / Math.tan(fov / 2);
+    const nf = 1 / (near - far);
+
+    return [
+      f / aspect, 0, 0, 0,
+      0, f, 0, 0,
+      0, 0, (far + near) * nf, -1,
+      0, 0, 2 * far * near * nf, 0
+    ];
+  }
+
+  function orthographic(left, right, bottom, top, near, far) {
+    return [
+      2 / (right - left), 0, 0, 0,
+      0, 2 / (top - bottom), 0, 0,
+      0, 0, -2 / (far - near), 0,
+      -(right + left) / (right - left), -(top + bottom) / (top - bottom), -(far + near) / (far - near), 1
+    ];
+  }
+
+  function translate(matrix, x, y, z) {
+    return multiply(matrix, [
+      1, 0, 0, 0,
+      0, 1, 0, 0,
+      0, 0, 1, 0,
+      x, y, z, 1
+    ]);
+  }
+
+  function scale(matrix, x, y, z) {
+    return multiply(matrix, [
+      x, 0, 0, 0,
+      0, y, 0, 0,
+      0, 0, z, 0,
+      0, 0, 0, 1
+    ]);
+  }
+
+  function rotateX(matrix, angle) {
+    const c = Math.cos(angle);
+    const s = Math.sin(angle);
+
+    return multiply(matrix, [
+      1, 0, 0, 0,
+      0, c, s, 0,
+      0, -s, c, 0,
+      0, 0, 0, 1
+    ]);
+  }
+
+  function rotateY(matrix, angle) {
+    const c = Math.cos(angle);
+    const s = Math.sin(angle);
+
+    return multiply(matrix, [
+      c, 0, -s, 0,
+      0, 1, 0, 0,
+      s, 0, c, 0,
+      0, 0, 0, 1
+    ]);
+  }
+
+  function resizeCanvas(canvas) {
+    const rect = canvas.getBoundingClientRect();
+    const ratio = Math.min(window.devicePixelRatio || 1, 2);
+    const width = Math.max(1, Math.floor(rect.width * ratio));
+    const height = Math.max(1, Math.floor(rect.height * ratio));
+
+    if (canvas.width !== width || canvas.height !== height) {
+      canvas.width = width;
+      canvas.height = height;
+    }
+
+    return ratio;
+  }
+
+  function loadImage(url) {
+    return new Promise((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => resolve(image);
+      image.onerror = () => reject(new Error(`Failed to load ${url}`));
+      image.src = url;
+    });
+  }
+
+  function createTexture(gl, image) {
+    const texture = gl.createTexture();
+
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+
+    return texture;
+  }
+
+  function createFaceBuffer(gl, face) {
+    const geometry = faceGeometry[face];
+    const data = [];
+
+    for (const index of indices) {
+      data.push(...geometry.positions[index], ...uvs[index], ...geometry.normal);
+    }
+
+    const buffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW);
+
+    return buffer;
+  }
+
+  function findDefaultBlock(blocks) {
+    return blocks.find((block) => {
+      const text = `${block.name || ""} ${block.id || ""}`.toLowerCase();
+      return text.includes("rocks") || text.includes("rock");
+    }) || blocks[0];
+  }
+
+  async function initViewer(root) {
+    const canvas = root.querySelector("[data-block-canvas]");
+    const pickerButton = root.querySelector("[data-block-picker-trigger]");
+    const autoRotate = root.querySelector("[data-auto-rotate]");
+    const blockName = root.querySelector("[data-block-name]");
+
+    if (!canvas) {
+      return;
+    }
+
+    const data = await fetch(root.dataset.source).then((response) => response.json());
+    const blocks = data.blocks ?? data;
+    const assetPrefix = root.dataset.assetPrefix || "";
+
+    const gl = canvas.getContext("webgl", { alpha: true, antialias: true });
+
+    if (!gl) {
+      root.classList.add("is-unavailable");
+      return;
+    }
+
+    const program = createProgram(gl);
+    const locations = {
+      position: gl.getAttribLocation(program, "aPosition"),
+      uv: gl.getAttribLocation(program, "aUv"),
+      normal: gl.getAttribLocation(program, "aNormal"),
+      matrix: gl.getUniformLocation(program, "uMatrix"),
+      texture: gl.getUniformLocation(program, "uTexture")
+    };
+
+    const faceBuffers = Object.fromEntries(faceOrder.map((face) => [face, createFaceBuffer(gl, face)]));
+    const texturePaths = [...new Set(blocks.flatMap((block) => Object.values(block.faces)))];
+    const textures = new Map();
+
+    await Promise.all(texturePaths.map(async (path) => {
+      textures.set(path, createTexture(gl, await loadImage(`${assetPrefix}${path}`)));
+    }));
+
+    let selectedBlock = findDefaultBlock(blocks);
+    let pickerOpen = false;
+    let yaw = -0.72;
+    let pitch = 0.48;
+    let dragging = false;
+    let lastX = 0;
+    let lastY = 0;
+    let lastTime = performance.now();
+    let previewHitBoxes = [];
+
+    function setPickerOpen(value) {
+      pickerOpen = value;
+      root.classList.toggle("is-picker-open", pickerOpen);
+    }
+
+    function selectBlock(block) {
+      selectedBlock = block;
+      blockName.textContent = block.name;
+      setPickerOpen(false);
+    }
+
+    function bindAttributes() {
+      gl.enableVertexAttribArray(locations.position);
+      gl.enableVertexAttribArray(locations.uv);
+      gl.enableVertexAttribArray(locations.normal);
+
+      gl.vertexAttribPointer(locations.position, 3, gl.FLOAT, false, 32, 0);
+      gl.vertexAttribPointer(locations.uv, 2, gl.FLOAT, false, 32, 12);
+      gl.vertexAttribPointer(locations.normal, 3, gl.FLOAT, false, 32, 20);
+    }
+
+    function drawBlock(block, matrix) {
+      gl.uniformMatrix4fv(locations.matrix, false, new Float32Array(matrix));
+
+      for (const face of faceOrder) {
+        gl.bindBuffer(gl.ARRAY_BUFFER, faceBuffers[face]);
+        bindAttributes();
+
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, textures.get(block.faces[face]));
+
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+      }
+    }
+
+    function clearViewport(x, y, width, height, color) {
+      gl.viewport(x, y, width, height);
+      gl.scissor(x, y, width, height);
+      gl.clearColor(color[0], color[1], color[2], color[3]);
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    }
+
+    function drawMain(delta, now, x, y, width, height) {
+      clearViewport(x, y, width, height, [0.02, 0.03, 0.045, 0]);
+
+      if (autoRotate?.checked && !dragging) {
+        yaw += delta * 0.65;
+      }
+
+      const aspect = width / Math.max(1, height);
+      let matrix = perspective(Math.PI / 4, aspect, 0.1, 100);
+      matrix = translate(matrix, 0, 0, -6);
+      matrix = rotateX(matrix, pitch);
+      matrix = rotateY(matrix, yaw);
+
+      drawBlock(selectedBlock, matrix);
+    }
+
+    function drawPalette(width, height, ratio) {
+      previewHitBoxes = [];
+
+      const padding = Math.floor(64 * ratio);
+      const gap = Math.floor(14 * ratio);
+      const tile = Math.floor(86 * ratio);
+      const columns = Math.max(1, Math.floor((width - padding * 2 + gap) / (tile + gap)));
+
+      for (let i = 0; i < blocks.length; i++) {
+        const block = blocks[i];
+        const col = i % columns;
+        const row = Math.floor(i / columns);
+
+        const x = padding + col * (tile + gap);
+        const y = height - padding - tile - row * (tile + gap);
+
+        if (y + tile < 0 || y > height) {
+          continue;
+        }
+
+        previewHitBoxes.push({ block, x, y, width: tile, height: tile });
+
+        gl.viewport(x, y, tile, tile);
+        gl.scissor(x, y, tile, tile);
+
+        const selected = block === selectedBlock;
+
+        if (selected) {
+          gl.clearColor(0.10, 0.16, 0.24, 0.26);
+          gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        } else {
+          gl.clear(gl.DEPTH_BUFFER_BIT);
+        }
+
+        let matrix = orthographic(-2.1, 2.1, -2.1, 2.1, -20, 20);
+
+        // Fixed inventory-style angle: top, front, and side visible.
+        matrix = rotateX(matrix, 0.62);
+        matrix = rotateY(matrix, 0.72);
+        matrix = scale(matrix, 0.86, 0.86, 0.86);
+
+        drawBlock(block, matrix);
+      }
+    }
+
+    pickerButton?.addEventListener("click", () => {
+      setPickerOpen(!pickerOpen);
+    });
+
+    selectBlock(selectedBlock);
+
+    canvas.addEventListener("pointerdown", (event) => {
+      const rect = canvas.getBoundingClientRect();
+      const ratio = canvas.width / Math.max(1, rect.width);
+      const x = (event.clientX - rect.left) * ratio;
+      const y = canvas.height - ((event.clientY - rect.top) * ratio);
+
+      if (pickerOpen) {
+        const hit = previewHitBoxes.find((box) =>
+          x >= box.x &&
+          x <= box.x + box.width &&
+          y >= box.y &&
+          y <= box.y + box.height
+        );
+
+        if (hit) {
+          selectBlock(hit.block);
+        }
+
+        return;
+      }
+
+      dragging = true;
+      lastX = event.clientX;
+      lastY = event.clientY;
+      canvas.setPointerCapture(event.pointerId);
+    });
+
+    canvas.addEventListener("pointermove", (event) => {
+      if (!dragging) {
+        return;
+      }
+
+      yaw += (event.clientX - lastX) * 0.012;
+      pitch += (event.clientY - lastY) * 0.012;
+      pitch = Math.max(-1.25, Math.min(1.25, pitch));
+
+      lastX = event.clientX;
+      lastY = event.clientY;
+    });
+
+    canvas.addEventListener("pointerup", () => {
+      dragging = false;
+    });
+
+    canvas.addEventListener("pointercancel", () => {
+      dragging = false;
+    });
+
+    function draw(now) {
+      const ratio = resizeCanvas(canvas);
+      const delta = Math.min((now - lastTime) / 1000, 0.05);
+      lastTime = now;
+
+      gl.enable(gl.DEPTH_TEST);
+      gl.enable(gl.SCISSOR_TEST);
+      gl.disable(gl.CULL_FACE);
+      gl.useProgram(program);
+      gl.uniform1i(locations.texture, 0);
+
+      gl.viewport(0, 0, canvas.width, canvas.height);
+      gl.scissor(0, 0, canvas.width, canvas.height);
+      gl.clearColor(0, 0, 0, 0);
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+      if (pickerOpen) {
+        drawPalette(canvas.width, canvas.height, ratio);
+      } else {
+        drawMain(
+          delta,
+          now,
+          0,
+          0,
+          canvas.width,
+          canvas.height
+        );
+      }
+
+      gl.disable(gl.SCISSOR_TEST);
+
+      requestAnimationFrame(draw);
+    }
+
+    requestAnimationFrame(draw);
+  }
+
+  for (const root of document.querySelectorAll("[data-shiftless-block-viewer]")) {
+    initViewer(root).catch((error) => {
+      console.error(error);
+      root.classList.add("is-unavailable");
+    });
+  }
+})();

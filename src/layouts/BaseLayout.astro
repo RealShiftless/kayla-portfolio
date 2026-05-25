@@ -1,0 +1,33 @@
+---
+import SiteHeader from "../components/SiteHeader.astro";
+
+type Props = {
+  title: string;
+  description: string;
+  assetPrefix?: string;
+  currentProject?: string;
+};
+
+const {
+  title,
+  description,
+  assetPrefix = "",
+  currentProject
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{title}</title>
+    <meta name="description" content={description}>
+    <link rel="stylesheet" href={`${assetPrefix}style/main.css`}>
+    <script src={`${assetPrefix}js/profile-fallback.js`} defer></script>
+  </head>
+  <body>
+    <SiteHeader assetPrefix={assetPrefix} currentProject={currentProject} />
+    <slot />
+  </body>
+</html>

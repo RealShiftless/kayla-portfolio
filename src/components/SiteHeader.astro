@@ -1,0 +1,58 @@
+---
+import { getCollection } from "astro:content";
+
+type Props = {
+  assetPrefix?: string;
+  currentProject?: string;
+};
+
+const { assetPrefix = "", currentProject } = Astro.props;
+const home = currentProject ? "../index.html" : "#top";
+const homePrefix = currentProject ? "../index.html" : "";
+const projects = (await getCollection("projects")).sort(
+  (a, b) => a.data.order - b.data.order
+);
+const topLevelProjects = projects.filter((project) => !project.data.parent);
+const childProjects = projects.filter((project) => project.data.parent);
+---
+
+<header class="site-header">
+  <nav class="nav" aria-label="Primary navigation">
+    <a class="brand" href={home}>Kayla Moulding</a>
+    <div class="nav-links">
+      <div class="nav-item nav-dropdown">
+        <a class="nav-trigger" href={`${homePrefix}#projects`} aria-current={currentProject ? "page" : undefined}>
+          <span>Projects</span>
+          <span class="chevron chevron-down" aria-hidden="true"></span>
+        </a>
+        <div class="dropdown-menu" aria-label="Project pages">
+          {topLevelProjects.map((project) => {
+            const children = childProjects.filter((child) => child.data.parent === project.data.title);
+
+            return children.length > 0 ? (
+              <div class="dropdown-item nested-dropdown">
+                <a href={`${assetPrefix}projects/${project.data.slug}.html`}>
+                  <span>{project.data.navLabel ?? project.data.title}</span>
+                  <span class="chevron chevron-right" aria-hidden="true"></span>
+                </a>
+                <div class="submenu" aria-label={`${project.data.title} subprojects`}>
+                  {children.map((child) => (
+                    <a href={`${assetPrefix}projects/${child.data.slug}.html`}>
+                      <span>{child.data.navLabel ?? child.data.title}</span>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <a href={`${assetPrefix}projects/${project.data.slug}.html`}>
+                <span>{project.data.navLabel ?? project.data.title}</span>
+              </a>
+            );
+          })}
+        </div>
+      </div>
+      <a href={`${homePrefix}#about`}>About</a>
+      <a href={`${homePrefix}#experience`}>Experience</a>
+    </div>
+  </nav>
+</header>

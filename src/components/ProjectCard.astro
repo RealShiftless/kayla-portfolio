@@ -1,0 +1,31 @@
+---
+type Project = {
+  data: {
+    title: string;
+    slug: string;
+    type: string;
+    status: string;
+    summary: string;
+    stack: string[];
+    github?: string;
+  };
+};
+
+const { project } = Astro.props as { project: Project };
+---
+
+<article class="project-card">
+  <div class="project-meta">
+    <span>{project.data.type}</span>
+    <span>{project.data.status}</span>
+  </div>
+  <h3><a href={`projects/${project.data.slug}.html`}>{project.data.title}</a></h3>
+  <p>{project.data.summary}</p>
+  <div class="tags">
+    {project.data.stack.map((tag) => <span class="tag">{tag}</span>)}
+  </div>
+  <div class="project-actions">
+    <a href={`projects/${project.data.slug}.html`}>Project notes</a>
+    {project.data.github && <a href={project.data.github} target="_blank" rel="noreferrer">GitHub</a>}
+  </div>
+</article>
