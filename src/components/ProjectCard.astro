@@ -1,4 +1,6 @@
 ---
+import { formatProjectStartShort } from "../lib/projects";
+
 type Project = {
   data: {
     title: string;
@@ -7,11 +9,13 @@ type Project = {
     status: string;
     summary: string;
     stack: string[];
+    startDate?: string;
     github?: string;
   };
 };
 
 const { project } = Astro.props as { project: Project };
+const startDate = formatProjectStartShort(project.data.startDate);
 ---
 
 <article class="project-card">
@@ -24,8 +28,15 @@ const { project } = Astro.props as { project: Project };
   <div class="tags">
     {project.data.stack.map((tag) => <span class="tag">{tag}</span>)}
   </div>
-  <div class="project-actions">
-    <a href={`projects/${project.data.slug}.html`}>Project notes</a>
-    {project.data.github && <a href={project.data.github} target="_blank" rel="noreferrer">GitHub</a>}
+  <div class="project-card-footer">
+    {startDate && <div class="project-start">Started {startDate}</div>}
+    <div class="project-actions">
+      {project.data.github && (
+        <a class="github-link" href={project.data.github} target="_blank" rel="noreferrer">
+          <span>GitHub</span>
+          <img class="project-action-icon" src="img/icons/github.svg" alt="" aria-hidden="true">
+        </a>
+      )}
+    </div>
   </div>
 </article>

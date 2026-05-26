@@ -1,39 +1,41 @@
 ---
-title: "Shiftless Procession"
-slug: "shiftless-procession"
-type: "Moddable voxel engine"
+title: "Procession"
+slug: "procession"
+type: "Moddable voxel game"
 status: "In progress"
-summary: "An in-progress moddable voxel engine built around content packages, procedural chunk generation, asynchronous loading and meshing, Clockwork graphics, custom UI, and runtime debugging tools."
-stack: ["C#", ".NET", "Clockwork", "Voxel systems", "Chunk meshing", "Procedural generation"]
-logo: "img/shiftless/logo.png"
+summary: "An in-progress factory-building voxel game built on Clockwork Runtime, focused on high-performance world systems, moddable game content, procedural generation, asynchronous chunk loading and meshing, Clockwork graphics/UI, and runtime debugging tools."
+stack: ["C#", ".NET", "Clockwork", "Voxel game", "Chunk meshing", "Procedural generation"]
+logo: "img/procession/logo.png"
+startDate: "2026-02-10"
+showcaseRank: 2
 featured: true
-navLabel: "Shiftless Procession"
+navLabel: "Procession"
 order: 2
 ---
 
 ## Overview
 
-Shiftless Procession is an in-progress moddable voxel engine. The project explores the structure behind a voxel world: content packages, registered blocks and biomes, procedural generation, chunk loading, mesh generation, rendering, scenes, input, UI, and debugging.
+Procession is my in-progress factory-building voxel game. It is a moddable voxel game built to run on top of Clockwork Runtime and the broader Clockwork stack, so the game can focus on high-performance voxel world simulation, game content, procedural terrain, chunk loading, mesh generation, voxel rendering flow, UI screens, and debugging without every engine layer living directly inside the game project.
 
-The strongest part of the project is the system design. It is built as more than a single demo scene: the runtime has separate areas for content bootstrap, world storage, generation, scheduling, rendering, UI, language assets, entities, and core gameplay content.
+The strongest part of the project is the system design behind the game. Procession is built as more than a single demo scene: the game has clear boundaries for world storage, generation, chunk scheduling, language assets, entities, and gameplay-facing content, while Clockwork provides the reusable runtime, bootstrap/frame graphs, service composition, registration, resources, graphics, UI, presentation, and tooling foundation.
 
 ## Architecture
 
-The project is split into a runtime project and a built-in content package.
+The project is split into game integration code and a built-in game/content package.
 
-- `Shiftless.Procession` owns the executable runtime, rendering, world systems, scheduling, scenes, UI, input, debugging, content loading, and engine-facing APIs.
-- `Shiftless.Procession.Core` is the built-in content package. It supplies blocks, biomes, terrain features, entities, world types, generator settings, language files, and texture assets.
+- `Shiftless.Procession` is the game/runtime integration namespace. It connects Procession-specific world systems, chunk scheduling, scenes, debugging, and game-facing APIs to Clockwork Runtime services, bootstrap/frame contribution, registration, resources, graphics, UI, and presentation.
+- `Shiftless.Procession.Core` is the game/content package layered on top. It supplies blocks, biomes, terrain features, entities, world types, generator settings, language files, texture assets, and the early gameplay-facing content for Procession.
 - `Shiftless.Procession.Host` and `Shiftless.Procession.Launcher` provide host/launcher infrastructure in the broader workspace shape.
 
-This package split matters because it keeps engine infrastructure separate from content definitions. Blocks, biomes, world types, and assets are treated as registered content rather than hardcoded directly into every subsystem.
+This package split matters because it keeps game systems separate from content definitions while Clockwork owns the reusable infrastructure. Blocks, biomes, world types, and assets are treated as registered game content rather than hardcoded directly into every subsystem.
 
-## Content and bootstrap model
+## Content and Clockwork integration
 
-The content model is based around package discovery, dependency resolution, registry creation, item registration, asset loading, and final sealing.
+The Procession content model is designed to plug into Clockwork rather than replace it. Clockwork provides service composition, bootstrap/frame graph contribution, registration infrastructure, resource lifetime, UI, and presentation flow; Procession contributes game-specific packages, registries, world systems, and content definitions.
 
-The main bootstrap flow is organized into stages such as discovering packages, resolving dependencies, registering asset types, creating registries, registering items, loading assets, finalizing, and sealing the runtime view.
+The game-side flow is still organized around package discovery, dependency resolution, item registration, asset loading, finalization, and a sealed runtime content view. The difference is that those steps are meant to sit on top of Clockwork's runtime services and registration/resource systems instead of becoming a separate general-purpose engine layer.
 
-This demonstrates an important engine idea: content should be loaded into a structured runtime model before gameplay systems depend on it.
+This is the core idea behind the content pipeline: gameplay systems depend on a structured runtime model instead of scattered setup code.
 
 ## World generation and chunk loading
 
@@ -52,18 +54,18 @@ The project includes concepts such as chunk managers, load-source tracking, shap
 
 ## Rendering and UI
 
-Rendering is built on Clockwork graphics. The renderer owns camera state, world drawing, sky rendering, chunk mesh upload, debug line rendering, UI rendering, text rendering, and shader outputs.
+Rendering is built on Clockwork graphics. Procession uses the Clockwork stack for the reusable runtime, graphics, UI, text, resources, and presentation layers, while the game owns voxel-specific rendering flow such as camera state, world drawing, sky rendering, chunk mesh upload, debug line rendering, and shader outputs.
 
 The UI side includes custom elements, layers, menus, debug overlays, console support, text fields, panels, buttons, images, and player-facing overlays. The project also includes language files and block texture assets, which makes it feel closer to a real runtime than a single isolated graphics test.
 
-## What it demonstrates
+## Technical focus
 
-- Designing a C# voxel runtime with separated engine and content package responsibilities.
+- Designing a factory-building voxel game that uses Clockwork for runtime, bootstrap, registration, resources, graphics, UI, and presentation.
 - Building asynchronous chunk generation and mesh scheduling concepts.
-- Thinking through block registries, biome registries, world types, assets, and content bootstrap stages.
-- Connecting procedural generation, chunk storage, rendering, UI, input, and debug tools.
+- Thinking through block registries, biome registries, world types, assets, and game content stages on top of Clockwork infrastructure.
+- Connecting procedural generation, chunk storage, rendering, UI, input, debug tools, and gameplay-facing content.
 - Working with graphics-oriented runtime constraints such as shader compilation, chunk mesh upload, frustum culling, and render-distance-driven chunk iteration.
 
 ## Models
 
-A small WebGL model viewer for imported model data from Shiftless Procession. It shows models exported from the game, with cube-style block models currently implemented first.
+A small WebGL model viewer for imported model data from Procession. It shows models exported from the game, with cube-style block models currently implemented first.

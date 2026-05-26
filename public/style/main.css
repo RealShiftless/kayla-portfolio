@@ -351,6 +351,16 @@ h3 {
   color: #f6fbff;
 }
 
+.button-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.button-icon-link {
+  gap: 9px;
+  padding-right: 20px;
+}
+
 .button-secondary {
   background: rgba(255, 255, 255, 0.58);
   color: var(--ink);
@@ -460,18 +470,50 @@ h3 {
   color: var(--muted);
 }
 
+.project-card h3 a {
+  text-decoration: underline;
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.16em;
+}
+
+.project-start {
+  color: #6c8092;
+  font-size: 0.82rem;
+  font-weight: 680;
+}
+
+.project-card-footer {
+  display: flex;
+  min-height: 28px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 18px;
+}
+
 .project-actions {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
+  justify-content: flex-end;
   gap: 12px;
-  margin-top: 18px;
   font-size: 0.9rem;
   font-weight: 760;
 }
 
 .project-actions a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   color: #315f82;
+}
+
+.project-actions .github-link {
+  padding-right: 2px;
+}
+
+.project-action-icon {
+  width: 0.95rem;
+  height: 0.95rem;
 }
 
 .tags {
@@ -565,7 +607,7 @@ h3 {
   object-position: center;
 }
 
-.project-logo[src$="shiftless/logo.png"] {
+.project-logo[src$="procession/logo.png"] {
   filter: brightness(0) saturate(100%) invert(30%) sepia(19%) saturate(760%) hue-rotate(170deg) brightness(91%) contrast(88%);
 }
 
@@ -578,6 +620,15 @@ h3 {
   letter-spacing: 0;
   line-height: 1;
   text-align: center;
+}
+
+.project-text-logo[aria-label="kui-desktop logo"] {
+  font-family:
+    ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", Menlo,
+    monospace;
+  font-size: clamp(1.55rem, 3vw, 2.45rem);
+  font-weight: 760;
+  overflow-wrap: anywhere;
 }
 
 .project-tiles {
@@ -686,6 +737,10 @@ h3 {
   margin-top: 10px;
   color: var(--muted);
   font-size: 0.9rem;
+}
+
+.project-screenshot img {
+  background: #eef4f7;
 }
 
 .project-media-section {

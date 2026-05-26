@@ -2,10 +2,11 @@
 import { getCollection } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import ProjectCard from "../components/ProjectCard.astro";
+import { sortTopLevelProjects } from "../lib/projects";
 
-const projects = (await getCollection("projects")).sort(
-  (a, b) => a.data.order - b.data.order
-).filter((project) => project.data.featured && !project.data.parent);
+const projects = sortTopLevelProjects(
+  (await getCollection("projects")).filter((project) => project.data.featured && !project.data.parent)
+);
 ---
 
 <BaseLayout title="Kayla Portfolio" description="Portfolio for Kayla Moulding">
@@ -13,12 +14,12 @@ const projects = (await getCollection("projects")).sort(
     <section class="section section-blue">
       <div class="wrap hero">
         <div>
-          <p class="eyebrow">Software and IT portfolio</p>
+          <p class="eyebrow">Software systems / IT / tooling</p>
           <h1>Kayla Moulding</h1>
           <p class="lead">
-            I work on C#/.NET and low-level technical projects with an interest
-            in runtime architecture, graphics abstraction, retained UI systems,
-            tooling, debugging, and IT troubleshooting.
+            I build C#/.NET, C, and systems-oriented projects around runtime
+            architecture, graphics abstraction, retained UI, native interop,
+            tooling, debugging, and practical IT troubleshooting.
           </p>
           <div class="hero-actions">
             <a class="button" href="#projects">View projects</a>
@@ -38,7 +39,7 @@ const projects = (await getCollection("projects")).sort(
             <p class="eyebrow">Project index</p>
             <h2>Projects</h2>
           </div>
-          <p>A quick overview of selected projects.</p>
+          <p>A compact index of the systems, tools, and experiments I want to show first.</p>
         </div>
         <div class="project-grid">
           {projects.map((project) => <ProjectCard project={project} />)}

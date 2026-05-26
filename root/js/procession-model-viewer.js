@@ -488,7 +488,7 @@
     requestAnimationFrame(draw);
   }
 
-  for (const root of document.querySelectorAll("[data-shiftless-block-viewer]")) {
+  for (const root of document.querySelectorAll("[data-procession-model-viewer]")) {
     initViewer(root).catch((error) => {
       console.error(error);
       root.classList.add("is-unavailable");

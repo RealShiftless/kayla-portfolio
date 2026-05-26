@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "sync:shiftless": "node scripts/export-shiftless-blocks.mjs",
+    "sync:procession": "node scripts/export-procession-blocks.mjs",
     "build": "astro build",
+    "publish:site": "bash scripts/publish-root-site.sh",
     "preview": "astro preview"
   },
   "dependencies": {

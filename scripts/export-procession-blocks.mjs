@@ -3,10 +3,15 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node
 import { basename, join } from "node:path";
 
 const env = readLocalEnv();
-const repo = process.env.SHIFTLESS_PATH ?? env.SHIFTLESS_PATH ?? "/home/kayla/Programming/C#/Shiftless.VoxelEngine";
-const ref = process.env.SHIFTLESS_REF ?? env.SHIFTLESS_REF ?? "main";
-const outTextureDir = "public/img/shiftless/blocks";
-const outDataPath = "public/data/shiftless-blocks.json";
+const repo = process.env.PROCESSION_PATH
+  ?? env.PROCESSION_PATH
+  ?? process.env.SHIFTLESS_PATH
+  ?? env.SHIFTLESS_PATH
+  ?? "/home/kayla/Programming/C#/Shiftless.VoxelEngine";
+const ref = process.env.PROCESSION_REF ?? env.PROCESSION_REF ?? process.env.SHIFTLESS_REF ?? env.SHIFTLESS_REF ?? "main";
+const outTextureDir = "public/img/procession/blocks";
+const outDataPath = "public/data/procession-blocks.json";
+// The game is Procession; Shiftless.Procession is the C# namespace/package path.
 const textureRoot = "Shiftless.Procession/content/core/assets";
 
 const faces = ["up", "down", "north", "south", "east", "west"];
@@ -70,7 +75,7 @@ function displayNameFromId(id) {
 }
 
 function textureUrl(texturePath) {
-  return `img/shiftless/blocks/${basename(texturePath)}`;
+  return `img/procession/blocks/${basename(texturePath)}`;
 }
 
 function copyTexture(texturePath) {
@@ -202,4 +207,4 @@ const data = {
 };
 
 writeFileSync(outDataPath, `${JSON.stringify(data, null, 2)}\n`);
-console.log(`Exported ${blocks.length} Shiftless blocks to ${outDataPath}`);
+console.log(`Exported ${blocks.length} Procession blocks to ${outDataPath}`);

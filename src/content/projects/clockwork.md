@@ -7,6 +7,8 @@ summary: "A modular C# engine/runtime framework with native graphics backend sup
 stack: ["C#", "C", ".NET", "OpenGL", "Vulkan", "Native interop", "CMake"]
 logo: "img/clockwork/logo.svg"
 diagram: "img/clockwork/cw_proj.svg"
+startDate: "2026-03-19"
+showcaseRank: 1
 featured: true
 navLabel: "Clockwork"
 order: 1
@@ -60,7 +62,7 @@ The project includes a retained custom UI layer with layout, visuals, brushes, b
 
 Sandbox projects and tests are used to validate the architecture as the framework grows. The sandbox apps prove that packages can work together in executable scenarios, while tests cover behavior across areas such as Common, Graphics, Runtime services/resources, UI, Text, Registration, and Presentation.
 
-## What it demonstrates
+## Technical focus
 
 - Designing a modular C# engine/runtime framework split into focused packages with explicit ownership boundaries.
 - Building a service-based runtime model where optional systems contribute to startup and frame execution.
@@ -74,8 +76,8 @@ Sandbox projects and tests are used to validate the architecture as the framewor
 
 Clockwork is the clearest example of how I think about software: larger systems should be made of smaller pieces with ownership boundaries that actually mean something. Runtime should orchestrate, not own every feature. Optional systems should compose cleanly. Rendering abstractions should be honest about native backend work. UI should have a structure that can grow without turning every panel into one-off code.
 
-The project is ambitious, but the framing is grounded: it is an actively developed modular engine/runtime framework that demonstrates architecture, C#, native interop, rendering abstraction, runtime systems, retained UI, testing, tools, and documentation.
+The project is ambitious, but the framing is grounded: it is an actively developed modular engine/runtime framework centered on architecture, C#, native interop, rendering abstraction, runtime systems, retained UI, testing, tools, and documentation.
 
-## Screenshot notes
+## Future media
 
-TODO: add screenshots once selected. Good candidates would be UI XML loading, rendered text, a sandbox app, a loading screen, a debug view, or a small demo showing runtime and graphics layers working together.
+Planned additions include screenshots of UI XML loading, rendered text, sandbox apps, loading screens, debug views, and small demos showing runtime and graphics layers working together.

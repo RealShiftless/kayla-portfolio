@@ -1,6 +1,7 @@
 ---
 import { getCollection } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import { formatProjectStartDate } from "../../lib/projects";
 
 export async function getStaticPaths() {
   const projects = await getCollection("projects");
@@ -12,11 +13,11 @@ export async function getStaticPaths() {
 }
 
 const { project } = Astro.props;
-const actionHref = project.data.demo ?? project.data.github ?? "../index.html#projects";
-const actionLabel = project.data.demo ? "Demo" : project.data.github ? "GitHub" : "All projects";
-const hasPrimaryProjectLink = Boolean(project.data.demo ?? project.data.github);
+const hasDemoLink = Boolean(project.data.demo);
+const hasGithubLink = Boolean(project.data.github);
 const sectionClasses = ["section-mint", "section-lilac", "section-rose", "section-blue"];
-const isShiftless = project.data.slug === "shiftless-procession";
+const hasProcessionModelViewer = project.data.slug === "procession";
+const startDate = formatProjectStartDate(project.data.startDate);
 
 function escapeHtml(value: string) {
   return value
@@ -110,12 +111,18 @@ const sections = parseProjectSections(project.body);
       </nav>
       <div class="wrap project-hero">
         <div>
-          <p class="eyebrow">Project notes</p>
+          <p class="eyebrow">Project write-up</p>
           <h1>{project.data.title}</h1>
           <p class="lead">{project.data.summary}</p>
           <div class="hero-actions">
-            {hasPrimaryProjectLink && <a class="button" href={actionHref}>{actionLabel}</a>}
+            {hasDemoLink && <a class="button" href={project.data.demo}>Demo</a>}
             <a class="button button-secondary" href="../index.html#projects">All projects</a>
+            {hasGithubLink && (
+              <a class="button button-secondary button-icon-link" href={project.data.github} target="_blank" rel="noreferrer">
+                <img class="button-icon" src="../img/icons/github.svg" alt="" aria-hidden="true">
+                <span>GitHub</span>
+              </a>
+            )}
           </div>
         </div>
         <aside class="project-summary" aria-label="Project details">
@@ -147,6 +154,12 @@ const sections = parseProjectSections(project.body);
               <dt>Status</dt>
               <dd>{project.data.status}</dd>
             </div>
+            {startDate && (
+              <div>
+                <dt>Started</dt>
+                <dd>{startDate}</dd>
+              </div>
+            )}
             <div>
               <dt>Stack</dt>
               <dd>{project.data.stack.join(", ")}</dd>
@@ -172,11 +185,11 @@ const sections = parseProjectSections(project.body);
                 )
               ))
             }
-            {isShiftless && ["gallery", "models"].includes(section.title.toLowerCase()) && (
+            {hasProcessionModelViewer && ["gallery", "models"].includes(section.title.toLowerCase()) && (
               <div
                 class="block-gallery"
-                  data-shiftless-block-viewer
-                  data-source="../data/shiftless-blocks.json"
+                  data-procession-model-viewer
+                  data-source="../data/procession-blocks.json"
                   data-asset-prefix="../"
                 >
                 <div class="block-gallery-toolbar">
@@ -199,7 +212,7 @@ const sections = parseProjectSections(project.body);
 
                 <div class="block-picker-heading" data-block-picker-heading>Blocks</div>
 
-                <canvas class="block-gallery-canvas" data-block-canvas aria-label="Interactive Shiftless block gallery"></canvas>
+                <canvas class="block-gallery-canvas" data-block-canvas aria-label="Interactive Procession model gallery"></canvas>
 
                 <p class="block-gallery-fallback">
                   WebGL is unavailable in this browser.
@@ -209,6 +222,22 @@ const sections = parseProjectSections(project.body);
           </div>
         </section>
       ))
+    }
+
+    {
+      project.data.screenshot && (
+        <section class="section project-media-section">
+          <div class="wrap">
+            <figure class="project-diagram project-screenshot">
+              <img
+                src={`../${project.data.screenshot}`}
+                alt={`${project.data.title} screenshot`}
+              >
+              <figcaption>Project screenshot.</figcaption>
+            </figure>
+          </div>
+        </section>
+      )
     }
 
     {
@@ -227,5 +256,5 @@ const sections = parseProjectSections(project.body);
       )
     }
   </main>
-  {isShiftless && <script src="../js/shiftless-block-viewer.js" defer></script>}
+  {hasProcessionModelViewer && <script src="../js/procession-model-viewer.js" defer></script>}
 </BaseLayout>

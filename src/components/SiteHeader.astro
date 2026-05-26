@@ -1,5 +1,6 @@
 ---
 import { getCollection } from "astro:content";
+import { sortChildProjects, sortTopLevelProjects } from "../lib/projects";
 
 type Props = {
   assetPrefix?: string;
@@ -9,11 +10,9 @@ type Props = {
 const { assetPrefix = "", currentProject } = Astro.props;
 const home = currentProject ? "../index.html" : "#top";
 const homePrefix = currentProject ? "../index.html" : "";
-const projects = (await getCollection("projects")).sort(
-  (a, b) => a.data.order - b.data.order
-);
-const topLevelProjects = projects.filter((project) => !project.data.parent);
-const childProjects = projects.filter((project) => project.data.parent);
+const projects = await getCollection("projects");
+const topLevelProjects = sortTopLevelProjects(projects.filter((project) => !project.data.parent));
+const childProjects = sortChildProjects(projects.filter((project) => project.data.parent));
 ---
 
 <header class="site-header">
